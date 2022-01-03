@@ -1,0 +1,4 @@
+name: meshed
+runtime:
+  name: go
+description: The underlying cluster stack for meshed

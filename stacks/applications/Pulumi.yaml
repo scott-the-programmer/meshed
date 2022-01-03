@@ -1,0 +1,4 @@
+name: meshed
+runtime:
+  name: go
+description: A collection of user-facing applications

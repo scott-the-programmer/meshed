@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: meshed-gateway 
+  namespace: istio-ingress 
+spec:
+  selector:
+    istio: ingress
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "$MESHED_BLOG_DNS"
+    - "$MESHED_TERM_NZ_DNS"
+    - "$MESHED_LEGACY_DNS"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: blog-https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: ingress-blog-cert
+    hosts:
+    - "$MESHED_BLOG_DNS"
+  - port:
+      number: 443
+      name: term-https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: ingress-term-cert
+    hosts:
+    - "$MESHED_TERM_NZ_DNS"
+  - port:
+      number: 443
+      name: legacy-https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: ingress-legacy-cert
+    hosts:
+    - "$MESHED_LEGACY_DNS"

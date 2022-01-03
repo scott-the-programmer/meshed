@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: term-nz-virtualservice
+  namespace: personal
+spec:
+  hosts:
+  - "term.nz"
+  gateways:
+  - meshed-gateway.istio-ingress
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: term-nz
+        port:
+          number: 80
