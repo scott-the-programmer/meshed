@@ -28,20 +28,25 @@ Once that's all ready, you can use the various commands I've written into the Ma
 - `make apps-down` - Takes the apps offline.
 - `make load-config` - Loads the kubeconfig from the cluster stack.
 
-## Configuration
+## Configuration 
 
-There are also a number of environment variables you'll need to set up. These variables are key to making sure everything is working just right:
+The project is configured via Pulumi settings. Set these using the `pulumi config set` command:
 
-| Environment Variable | Description                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `CLOUDFLARE_ZONE_ID` | This is the Zone ID for my domain in Cloudflare. It's used when creating DNS records.        |
-| `CLOUDFLARE_EMAIL`   | My Cloudflare account email. This is what's used to authenticate with the Cloudflare API.    |
-| `CLOUDFLARE_API_KEY` | My Cloudflare API key. This is also used to authenticate with the Cloudflare API.            |
-| `MESHED_BLOG_DNS`    | The domain I use for my blog. It's used when creating the DNS record and Kubernetes Ingress. |
-| `MESHED_EMAIL`       | My email that I use with Let's Encrypt for certificate generation.                           |
-| `MESHED_ACME_SECRET` | The secret used for the ACME challenge.                                                      |
-| `MESHED_CLOUD`       | Currently supports "linode" or "scaleway" (defaults to linode)                               |
+- `meshed:CLOUDFLARE_BLOG_ZONE_ID`: Zone ID for the blog on Cloudflare. 
+- `meshed:CLOUDFLARE_TERM_NZ_ZONE_ID`: Zone ID for the term NZ on Cloudflare.
+- `meshed:CLOUDFLARE_LEGACY_ZONE_ID`: Zone ID for the legacy domain on Cloudflare.
+- `meshed:CLOUDFLARE_EMAIL`: Your Cloudflare email.
+- `meshed:CLOUDFLARE_API_KEY`: Your Cloudflare API key.
+- `meshed:MESHED_BLOG_DNS`: The DNS for the blog.
+- `meshed:MESHED_TERM_NZ_DNS`: The DNS for term NZ.
+- `meshed:MESHED_LEGACY_DNS`: The DNS for the legacy domain.
+- `meshed:MESHED_EMAIL`: Email for domain registration.
+- `meshed:MESHED_ACME_SECRET`: The ACME secret.
+- `meshed:MESHED_STAGING`: A boolean value to indicate if it's staging.
 
+Remember to replace `<value>` with the actual values when setting the configuration.
+
+---
 Depending on what MESHED_CLOUD is set to, you will need to configure the [linode](https://www.pulumi.com/registry/packages/linode/installation-configuration/) or [scaleway variables](https://www.pulumi.com/registry/packages/scaleway/installation-configuration/)
 
 Feel free to give it a whirl, and see what you can learn from it! And, of course, if you have any suggestions or improvements, I'd love to hear them.
