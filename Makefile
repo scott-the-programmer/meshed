@@ -1,7 +1,6 @@
 .PHONY: build
 build:
 	go mod tidy
-	go get
 
 .PHONY: cluster-preview
 cluster-preview:

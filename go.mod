@@ -1,6 +1,6 @@
 module meshed
 
-go 1.17
+go 1.20
 
 require (
 	github.com/lbrlabs/pulumi-scaleway/sdk v1.7.0
