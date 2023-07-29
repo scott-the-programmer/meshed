@@ -1,0 +1,5 @@
+name: meshed
+runtime:
+  name: go
+description: A collection of monitoring applications
+

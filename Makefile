@@ -38,9 +38,25 @@ apps-up:
 apps-down:
 	cd stacks/applications && pulumi stack select "applications" -c && pulumi destroy -y
 
+.PHONY: monitoring-preview
+monitoring-preview:
+	cd stacks/monitoring && pulumi stack select "monitoring" -c && pulumi preview
+
+.PHONY: monitoring-up
+monitoring-up:
+	cd stacks/monitoring && pulumi stack select "monitoring" -c && pulumi up
+
+.PHONY: monitoring-down
+monitoring-down:
+	cd stacks/monitoring && pulumi stack select "monitoring" -c && pulumi destroy -y
+
 .PHONY: load-config
 load-config:
 	cd stacks/cluster && pulumi stack output kubeconfig --show-secrets > $$HOME/.kube/config
+
+.PHONY: grafana
+grafana:
+	kubectl port-forward -n monitoring svc/grafana 3000:3000
 
 .PHONY: nuke
 nuke:
