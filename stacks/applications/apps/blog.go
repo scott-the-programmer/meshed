@@ -35,7 +35,7 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 					Containers: corev1.ContainerArray{
 						corev1.ContainerArgs{
 							Name:  pulumi.String(name),
-							Image: pulumi.String("scottam/scott-the-programmer:latest"),
+							Image: pulumi.String("ghcr.io/scott-the-programmer/smkiwi/smkiwi:latest"),
 						}},
 				},
 			},
