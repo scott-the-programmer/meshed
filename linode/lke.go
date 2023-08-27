@@ -14,7 +14,7 @@ func NewLkeCluster(ctx *pulumi.Context, name string, version string) (pulumi.Str
 		Label:      pulumi.String(name),
 		Pools: linode.LkeClusterPoolArray{
 			&linode.LkeClusterPoolArgs{
-				Count: pulumi.Int(3),
+				Count: pulumi.Int(2),
 				Type:  pulumi.String("g6-standard-1"),
 			},
 		},
