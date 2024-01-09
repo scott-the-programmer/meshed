@@ -9,6 +9,7 @@ config:
   meshed:CLOUDFLARE_BLOG_ZONE_ID:
     secure: AAABAF5x4EIs9UOIt8B8evfVozTcnGSHNqJNLV2ngknDyiuKelJMEArNwFqmudiTRwP23XT/Uueo4eXlklS9ug==
   meshed:MESHED_TERM_NZ_DNS: term.nz
+  meshed:MESHED_API_DNS: api.murray.kiwi
   meshed:CLOUDFLARE_TERM_NZ_ZONE_ID:
     secure: AAABAGBcfaOKLc1KbGd+xpBIdGi//xpBvDl+JR2XTywqTLGLZ2zCJlWaKI0R8XkWUqmS4wmFEqU/xVv7HD7ixA==
   meshed:MESHED_EMAIL:

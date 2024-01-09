@@ -7,17 +7,30 @@ import (
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
+		conf := config.New(ctx, "satellite")
+
+		n2yoKey := conf.RequireSecret("N2YO_KEY")
+		longitude := conf.RequireSecret("CURRENT_LONGITUDE")
+		latitude := conf.RequireSecret("CURRENT_LATITUDE")
+
+		satelliteConfig := &apps.SatelliteConfig{
+			N2YOKey: n2yoKey,
+			Longitude: longitude,
+			Latitude: latitude,
+		}
+
 		clusterStack, err := pulumi.NewStackReference(ctx, "scott-the-programmer/meshed/cluster", nil)
 		if err != nil {
 			return err
 		}
-		config := clusterStack.GetStringOutput(pulumi.String("kubeconfig"))
+		kubeConf := clusterStack.GetStringOutput(pulumi.String("kubeconfig"))
 
-		provider, err := kubernetes.NewKubernetesProvider(ctx, config)
+		provider, err := kubernetes.NewKubernetesProvider(ctx, kubeConf)
 		if err != nil {
 			return err
 		}
@@ -35,6 +48,11 @@ func main() {
 		}
 
 		err = apps.NewBlog(ctx, provider, appNS, "blog")
+		if err != nil {
+			return err
+		}
+
+		err = apps.NewSatellites(ctx, provider, appNS, satelliteConfig, "satellite-api")
 		if err != nil {
 			return err
 		}

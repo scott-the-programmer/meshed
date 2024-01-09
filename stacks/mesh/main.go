@@ -27,6 +27,7 @@ func main() {
 		cloudflareApiKey := conf.RequireSecret("CLOUDFLARE_API_KEY")
 		blogDns := conf.Get("MESHED_BLOG_DNS")
 		termNzDns := conf.Get("MESHED_TERM_NZ_DNS")
+		apiDns := conf.Get("MESHED_API_DNS")
 		legacyDns := conf.Get("MESHED_LEGACY_DNS")
 		email := conf.RequireSecret("MESHED_EMAIL")
 		acmeSecret := conf.RequireSecret("MESHED_ACME_SECRET")
@@ -37,6 +38,7 @@ func main() {
 		pulumi.All(blogDnsZoneId, termNzDnsZoneId, legacyDnsZoneId, cloudflareEmail, cloudflareApiKey, email, acmeSecret).ApplyT(func(values []interface{}) error {
 			replacer.Add("MESHED_BLOG_DNS", blogDns)
 			replacer.Add("MESHED_TERM_NZ_DNS", termNzDns)
+			replacer.Add("MESHED_API_DNS", apiDns)
 			replacer.Add("MESHED_LEGACY_DNS", legacyDns)
 			replacer.Add("CLOUDFLARE_BLOG_ZONE_ID", values[0].(string))
 			replacer.Add("CLOUDFLARE_TERM_NZ_ZONE_ID", values[1].(string))
@@ -71,6 +73,12 @@ func main() {
 				if err != nil {
 					return err
 				}
+
+				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: apiDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+				if err != nil {
+					return err
+				}
+
 				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", blogDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
 				if err != nil {
 					return err
