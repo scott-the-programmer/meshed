@@ -7,7 +7,7 @@ spec:
   hosts:
   - "term.nz"
   gateways:
-  - meshed-gateway.istio-ingress
+  - istio-ingress/meshed-gateway
   http:
   - match:
     - uri:

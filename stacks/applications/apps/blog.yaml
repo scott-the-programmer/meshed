@@ -8,7 +8,7 @@ spec:
   - "scott.murray.kiwi"
   - "scott-the-programmer.com"
   gateways:
-  - meshed-gateway.istio-ingress
+  - istio-ingress/meshed-gateway
   http:
   - match:
     - uri:
