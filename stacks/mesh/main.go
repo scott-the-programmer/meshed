@@ -24,7 +24,6 @@ func main() {
 		termNzDnsZoneId := conf.RequireSecret("CLOUDFLARE_TERM_NZ_ZONE_ID")
 		legacyDnsZoneId := conf.RequireSecret("CLOUDFLARE_LEGACY_ZONE_ID")
 		cloudflareEmail := conf.RequireSecret("CLOUDFLARE_EMAIL")
-		cloudflareApiKey := conf.RequireSecret("CLOUDFLARE_API_KEY")
 		blogDns := conf.Get("MESHED_BLOG_DNS")
 		termNzDns := conf.Get("MESHED_TERM_NZ_DNS")
 		apiDns := conf.Get("MESHED_API_DNS")
@@ -35,7 +34,7 @@ func main() {
 
 		replacer := resources.NewReplacer("../../")
 
-		pulumi.All(blogDnsZoneId, termNzDnsZoneId, legacyDnsZoneId, cloudflareEmail, cloudflareApiKey, email, acmeSecret).ApplyT(func(values []interface{}) error {
+		pulumi.All(blogDnsZoneId, termNzDnsZoneId, legacyDnsZoneId, cloudflareEmail, email, acmeSecret).ApplyT(func(values []interface{}) error {
 			replacer.Add("MESHED_BLOG_DNS", blogDns)
 			replacer.Add("MESHED_TERM_NZ_DNS", termNzDns)
 			replacer.Add("MESHED_API_DNS", apiDns)
@@ -44,9 +43,8 @@ func main() {
 			replacer.Add("CLOUDFLARE_TERM_NZ_ZONE_ID", values[1].(string))
 			replacer.Add("CLOUDFLARE_LEGACY_ZONE_ID", values[2].(string))
 			replacer.Add("CLOUDFLARE_EMAIL", values[3].(string))
-			replacer.Add("CLOUDFLARE_API_KEY", values[4].(string))
-			replacer.Add("MESHED_EMAIL", values[5].(string))
-			replacer.Add("MESHED_ACME_SECRET", values[6].(string))
+			replacer.Add("MESHED_EMAIL", values[4].(string))
+			replacer.Add("MESHED_ACME_SECRET", values[5].(string))
 
 			provider, err := kubernetes.NewKubernetesProvider(ctx, kubeConfig)
 			if err != nil {
