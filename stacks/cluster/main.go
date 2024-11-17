@@ -19,7 +19,7 @@ func main() {
 		var err error
 		switch conf {
 		case "linode":
-			config, err = linode.NewLkeCluster(ctx, "meshed", "1.26")
+			config, err = linode.NewLkeCluster(ctx, "meshed", "1.29")
 			if err != nil {
 				return err
 			}
