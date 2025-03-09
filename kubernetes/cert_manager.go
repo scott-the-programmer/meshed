@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func NewCertManager(ctx *pulumi.Context, gw *helm.Release, provider *kubernetes.Provider, replacer *resources.Replacer) (*helm.Release, error) {
+func NewCertManager(ctx *pulumi.Context, provider *kubernetes.Provider, replacer *resources.Replacer) (*helm.Release, error) {
 
 	ns, err := corev1.NewNamespace(ctx, "cert-manager", &corev1.NamespaceArgs{
 		Metadata: metav1.ObjectMetaArgs{

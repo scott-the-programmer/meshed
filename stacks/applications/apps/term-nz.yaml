@@ -1,19 +1,24 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: term-nz-virtualservice
+  name: term-nz-ingress
   namespace: personal
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt"
 spec:
-  hosts:
-  - "term.nz"
-  gateways:
-  - istio-ingress/meshed-gateway
-  http:
-  - match:
-    - uri:
-        prefix: "/"
-    route:
-    - destination:
-        host: term-nz
-        port:
-          number: 80
+  tls:
+  - hosts:
+    - "term.nz"
+    secretName: ingress-term-cert
+  rules:
+  - host: "term.nz"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: term-nz
+            port:
+              number: 80

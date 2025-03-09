@@ -61,3 +61,7 @@ grafana:
 .PHONY: nuke
 nuke:
 	./kubernetes/resources/nuke.sh
+
+.PHONY: ingress-ip
+ingress-ip:
+	kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}'

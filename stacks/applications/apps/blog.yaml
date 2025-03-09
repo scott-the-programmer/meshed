@@ -1,20 +1,37 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: blog-virtualservice
+  name: blog-ingress
   namespace: personal
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt"
 spec:
-  hosts:
-  - "scott.murray.kiwi"
-  - "scott-the-programmer.com"
-  gateways:
-  - istio-ingress/meshed-gateway
-  http:
-  - match:
-    - uri:
-        prefix: "/"
-    route:
-    - destination:
-        host: blog
-        port:
-          number: 9080
+  tls:
+  - hosts:
+    - "scott.murray.kiwi"
+    secretName: ingress-blog-cert
+  - hosts:
+    - "scott-the-programmer.com"
+    secretName: ingress-legacy-cert
+  rules:
+  - host: "scott.murray.kiwi"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: blog
+            port:
+              number: 9080
+  - host: "scott-the-programmer.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: blog
+            port:
+              number: 9080

@@ -39,9 +39,7 @@ func main() {
 			&corev1.NamespaceArgs{
 				Metadata: metav1.ObjectMetaArgs{
 					Name: pulumi.String("personal"),
-					Labels: pulumi.StringMap{
-						"istio-injection": pulumi.String("enabled"),
-					}},
+				},
 			}, pulumi.Provider(provider))
 		if err != nil {
 			return err

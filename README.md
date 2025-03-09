@@ -1,8 +1,10 @@
-# Meshed Infrastructure
+# Kubernetes Infrastructure
 
-Hello there! This is my personal project for deploying my Kubernetes infrastructure, which includes my mesh network and various applications, using Pulumi. I've opted to use Scaleway as the Kubernetes provider and Cloudflare for DNS management - these platforms fit my needs best, providing a balance of functionality, affordability, and ease-of-use.
+Hello there! This is my personal project for deploying my Kubernetes infrastructure, which includes my ingress controller and various applications, using Pulumi. I've opted to use Scaleway as the Kubernetes provider and Cloudflare for DNS management - these platforms fit my needs best, providing a balance of functionality, affordability, and ease-of-use.
 
 This project is geared towards my personal use - that includes my blog, my personal projects, and more - but if you're curious and want to try it out yourself or reverse-engineer it, you're more than welcome to! However, please remember that running this project with your own credentials will incur cost. Always ensure you understand the pricing models of any cloud services you're using!
+
+This project uses NGINX Ingress Controller instead of Istio for better compatibility with ARM architecture.
 
 ## Getting Started
 

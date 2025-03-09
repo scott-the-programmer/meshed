@@ -1,7 +1,3 @@
 #!/bin/bash
-
-helm delete istio-system -n istio-system
-helm delete istiod -n istio-system
-helm delete istio-base -n istio-system
-
-kubectl get crd -oname | grep --color=never 'istio.io' | xargs kubectl delete
+# This script is now deprecated - use nuke.sh instead
+echo "This script is deprecated. Please use nuke.sh for complete cleanup."
