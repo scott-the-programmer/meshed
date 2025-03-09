@@ -61,7 +61,8 @@ func main() {
 				return err
 			}
 
-			_, _, err = kubernetes.NewMesh(ctx, provider, replacer)
+			// Setup basic ingress instead of Istio mesh
+			err = kubernetes.NewIngressController(ctx, provider, replacer)
 			if err != nil {
 				return err
 			}

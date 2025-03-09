@@ -33,7 +33,7 @@ func NewCertManager(ctx *pulumi.Context, provider *kubernetes.Provider, replacer
 		},
 		WaitForJobs: pulumi.Bool(true),
 		Timeout:     pulumi.Int(600),
-	}, pulumi.Provider(provider), pulumi.Parent(gw), pulumi.DeleteBeforeReplace(true))
+	}, pulumi.Provider(provider), pulumi.DeleteBeforeReplace(true))
 	if err != nil {
 		return nil, err
 	}
