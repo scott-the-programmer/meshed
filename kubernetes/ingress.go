@@ -161,6 +161,13 @@ func NewMesh(ctx *pulumi.Context, provider *kubernetes.Provider, replacer *resou
 		Timeout:     pulumi.Int(600),
 		WaitForJobs: pulumi.Bool(true),
 		Atomic:      pulumi.Bool(true),
+		Values: pulumi.Map{
+				"_internal_defaults_do_not_set": pulumi.Map{ // BRING IT ON
+					"limits": pulumi.Map{
+						"cpu": pulumi.String("500m"),
+					},
+				},
+			},
 	}, pulumi.Provider(provider), pulumi.Parent(istioGwNs))
 	if err != nil {
 		return nil, pulumi.StringPtrOutput{}, err

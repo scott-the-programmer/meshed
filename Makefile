@@ -20,7 +20,7 @@ mesh-preview:
 
 .PHONY: mesh-up
 mesh-up:
-	cd stacks/mesh && pulumi stack select "mesh" -c && pulumi up
+	cd stacks/mesh && pulumi stack select "mesh-local" -c && pulumi up
 
 .PHONY: mesh-down
 mesh-down:

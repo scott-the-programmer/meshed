@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"meshed/cloudflare"
 	"meshed/kubernetes"
 	"meshed/kubernetes/resources"
+	"meshed/local"
+	"os"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -12,12 +12,22 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		clusterStack, err := pulumi.NewStackReference(ctx, "scott-the-programmer/meshed/cluster", nil)
-		if err != nil {
-			return err
-		}
-		kubeConfig := clusterStack.GetStringOutput(pulumi.String("kubeconfig"))
+		var kubeConfig pulumi.StringOutput
+		var err error
 
+		localCluster := os.Getenv("MESHED_LOCAL") == "true"
+		if localCluster {
+			kubeConfig, err = local.NewLocalCluster(ctx)
+			if err != nil {
+				return err
+			}
+		} else {
+			clusterStack, err := pulumi.NewStackReference(ctx, "scott-the-programmer/meshed/cluster", nil)
+			if err != nil {
+				return err
+			}
+			kubeConfig = clusterStack.GetStringOutput(pulumi.String("kubeconfig"))
+		}
 		conf := config.New(ctx, "")
 
 		blogDnsZoneId := conf.RequireSecret("CLOUDFLARE_BLOG_ZONE_ID")
@@ -30,7 +40,7 @@ func main() {
 		legacyDns := conf.Get("MESHED_LEGACY_DNS")
 		email := conf.RequireSecret("MESHED_EMAIL")
 		acmeSecret := conf.RequireSecret("MESHED_ACME_SECRET")
-		staging := conf.GetBool("MESHED_STAGING")
+		//staging := conf.GetBool("MESHED_STAGING")
 
 		replacer := resources.NewReplacer("../../")
 
@@ -51,62 +61,62 @@ func main() {
 				return err
 			}
 
-			gw, ip, err := kubernetes.NewMesh(ctx, provider, replacer)
+			_, _, err = kubernetes.NewMesh(ctx, provider, replacer)
 			if err != nil {
 				return err
 			}
 
-			certMan, err := kubernetes.NewCertManager(ctx, gw, provider, replacer)
-			if err != nil {
-				return err
-			}
+			// certMan, err := kubernetes.NewCertManager(ctx, gw, provider, replacer)
+			// if err != nil {
+			// 	return err
+			// }
 
-			err = kubernetes.NewCerts(ctx, provider, replacer, certMan, staging)
-			if err != nil {
-				return err
-			}
+			// err = kubernetes.NewCerts(ctx, provider, replacer, certMan, staging)
+			// if err != nil {
+			// 	return err
+			// }
 
-			blogDnsZoneId.ApplyT(func(val string) error {
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: blogDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
+			// blogDnsZoneId.ApplyT(func(val string) error {
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: blogDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: apiDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: apiDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", blogDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
-				return nil
-			})
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", blogDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	return nil
+			// })
 
-			termNzDnsZoneId.ApplyT(func(val string) error {
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: termNzDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", termNzDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
-				return nil
-			})
+			// termNzDnsZoneId.ApplyT(func(val string) error {
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: termNzDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", termNzDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	return nil
+			// })
 
-			legacyDnsZoneId.ApplyT(func(val string) error {
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: legacyDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
-				_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", legacyDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
-				if err != nil {
-					return err
-				}
-				return nil
-			})
+			// legacyDnsZoneId.ApplyT(func(val string) error {
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: legacyDns, Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	_, err = cloudflare.NewARecord(ctx, cloudflare.ARecordArgs{Source: fmt.Sprintf("%s.%s", "www", legacyDns), Target: ip.Elem().ToStringOutput(), ZoneID: val, Proxied: false})
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	return nil
+			// })
 			return nil
 		})
 
