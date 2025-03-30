@@ -1,0 +1,20 @@
+config:
+  meshed:CLOUDFLARE_API_TOKEN:
+    secure: AAABACrZQ/vjyIjpTgHh4WFYQsPLM44tXwZcElhGDQMe2BYT
+  meshed:CLOUDFLARE_BLOG_ZONE_ID:
+    secure: AAABAJ+388u7/jQx49s6DgjFvNARimzOBqk5b3ZMt1r72aD6
+  meshed:CLOUDFLARE_EMAIL:
+    secure: AAABALYjyha2LHxCjBCKWKHaWNKtZwPOV6ccB4/xjIZyiOee
+  meshed:CLOUDFLARE_LEGACY_ZONE_ID:
+    secure: AAABAGQ+bAbElvMH5uY+qJ0vaYpOiiewyNnsMLnZE3U4GWWS
+  meshed:CLOUDFLARE_TERM_NZ_ZONE_ID:
+    secure: AAABAKGEQ7Fq4eRPg1bCmPgqhzXs+TPa5kEqQ9VpN5oc0A7D
+  meshed:MESHED_ACME_SECRET:
+    secure: AAABAJyAVjeGP9XlwtJclh2Dg0NSITzOHBQQIDB2IhwZRA8m
+  meshed:MESHED_API_DNS: api.murray.kiwi
+  meshed:MESHED_BLOG_DNS: scott.murray.kiwi
+  meshed:MESHED_EMAIL:
+    secure: AAABAPA/Hqca2tZcjgndUl4Q1Ogcmam1ab8UrnsoddGNWmiQ
+  meshed:MESHED_LEGACY_DNS: scott-the-programmer.com
+  meshed:MESHED_STAGING: "false"
+  meshed:MESHED_TERM_NZ_DNS: term.nz
