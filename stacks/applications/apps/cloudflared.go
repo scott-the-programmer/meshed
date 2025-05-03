@@ -15,6 +15,7 @@ type CloudflaredArgs struct {
 	TunnelSecretKey  pulumi.StringInput
 	Image            pulumi.StringPtrInput
 	Subdomain        pulumi.StringInput
+	Domain          pulumi.StringInput
 }
 
 func NewCloudflared(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Namespace, name string, args *CloudflaredArgs) error {
@@ -50,7 +51,7 @@ func NewCloudflared(ctx *pulumi.Context, provider *kubernetes.Provider, ns *core
 								pulumi.String("tunnel"),
 								pulumi.String("run"),
 								pulumi.String("--token"),
-								pulumi.Sprintf("%s.%s", args.Subdomain, "murray.kiwi"), // Replace murray.kiwi with your domain
+								pulumi.Sprintf("%s.%s", args.Subdomain, args.Domain),
 							},
 							Env: corev1.EnvVarArray{
 								corev1.EnvVarArgs{

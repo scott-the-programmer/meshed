@@ -7,7 +7,6 @@ import (
 	appsv1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/apps/v1"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
-	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -55,11 +54,11 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 			},
 		},
 		Spec: &corev1.ServiceSpecArgs{
-			Type: pulumi.String("ClusterIP"),
+			Type: pulumi.String("ClusterIP"), // Change to ClusterIP
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
-					Port:       pulumi.Int(9080),
-					TargetPort: pulumi.Int(80), //Original Target Port
+					Port:       pulumi.Int(80),       // Change to port 80
+					TargetPort: pulumi.Int(9080), //Original Target Port
 					Protocol:   pulumi.String("TCP"),
 				},
 			},
@@ -69,17 +68,6 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 	if err != nil {
 		return err
 	}
-
-	//Remove the ingress
-	// _, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
-	// 	&yaml.ConfigFileArgs{
-	// 		File: fmt.Sprintf("apps/%s.yaml", name),
-	// 	},
-	// 	pulumi.Provider(provider), pulumi.Parent(ns),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

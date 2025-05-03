@@ -7,7 +7,6 @@ import (
 	appsv1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/apps/v1"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
-	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -79,7 +78,7 @@ func NewSatellites(ctx *pulumi.Context,
 			},
 		},
 		Spec: &corev1.ServiceSpecArgs{
-			Type: pulumi.String("ClusterIP"),
+			Type: pulumi.String("ClusterIP"), // Change to ClusterIP
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
 					Port:       pulumi.Int(80),
@@ -93,17 +92,6 @@ func NewSatellites(ctx *pulumi.Context,
 	if err != nil {
 		return err
 	}
-
-	//Remove the ingress
-	// _, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
-	// 	&yaml.ConfigFileArgs{
-	// 		File: "apps/satellites.yaml",
-	// 	},
-	// 	pulumi.Provider(provider), pulumi.Parent(ns),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }

@@ -47,9 +47,10 @@ func main() {
 
 		// Create Cloudflared deployment
 		cloudflaredArgs := &apps.CloudflaredArgs{
-			TunnelSecretName: pulumi.String("cloudflared-token"), // Replace with your secret name
+			TunnelSecretName: pulumi.String("smkiwi-cloudflared-token"), // Replace with your secret name
 			TunnelSecretKey:  pulumi.String("token"),            // Replace with your secret key
 			Subdomain:        pulumi.String("api"),              // Replace with your desired subdomain
+			Domain:           pulumi.String("murray.kiwi"),
 		}
 
 		err = apps.NewCloudflared(ctx, provider, appNS, "cloudflared", cloudflaredArgs)
