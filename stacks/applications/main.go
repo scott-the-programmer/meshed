@@ -19,9 +19,9 @@ func main() {
 		latitude := conf.RequireSecret("CURRENT_LATITUDE")
 
 		satelliteConfig := &apps.SatelliteConfig{
-			N2YOKey: n2yoKey,
+			N2YOKey:   n2yoKey,
 			Longitude: longitude,
-			Latitude: latitude,
+			Latitude:  latitude,
 		}
 
 		clusterStack, err := pulumi.NewStackReference(ctx, "scott-the-programmer/meshed/cluster", nil)
@@ -41,6 +41,18 @@ func main() {
 					Name: pulumi.String("personal"),
 				},
 			}, pulumi.Provider(provider))
+		if err != nil {
+			return err
+		}
+
+		// Create Cloudflared deployment
+		cloudflaredArgs := &apps.CloudflaredArgs{
+			TunnelSecretName: pulumi.String("cloudflared-token"), // Replace with your secret name
+			TunnelSecretKey:  pulumi.String("token"),            // Replace with your secret key
+			Subdomain:        pulumi.String("api"),              // Replace with your desired subdomain
+		}
+
+		err = apps.NewCloudflared(ctx, provider, appNS, "cloudflared", cloudflaredArgs)
 		if err != nil {
 			return err
 		}

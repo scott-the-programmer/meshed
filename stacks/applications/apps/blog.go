@@ -59,7 +59,7 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
 					Port:       pulumi.Int(9080),
-					TargetPort: pulumi.Int(80),
+					TargetPort: pulumi.Int(80), //Original Target Port
 					Protocol:   pulumi.String("TCP"),
 				},
 			},
@@ -70,15 +70,16 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 		return err
 	}
 
-	_, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
-		&yaml.ConfigFileArgs{
-			File: fmt.Sprintf("apps/%s.yaml", name),
-		},
-		pulumi.Provider(provider), pulumi.Parent(ns),
-	)
-	if err != nil {
-		return err
-	}
+	//Remove the ingress
+	// _, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
+	// 	&yaml.ConfigFileArgs{
+	// 		File: fmt.Sprintf("apps/%s.yaml", name),
+	// 	},
+	// 	pulumi.Provider(provider), pulumi.Parent(ns),
+	// )
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

@@ -7,27 +7,27 @@ import (
 	appsv1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/apps/v1"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
-	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type SatelliteConfig struct {
-	N2YOKey   pulumi.StringOutput
-	Longitude pulumi.StringOutput
-	Latitude  pulumi.StringOutput
+type CloudflaredArgs struct {
+	TunnelSecretName pulumi.StringInput
+	TunnelSecretKey  pulumi.StringInput
+	Image            pulumi.StringPtrInput
+	Subdomain        pulumi.StringInput
 }
 
-func NewSatellites(ctx *pulumi.Context,
-	provider *kubernetes.Provider,
-	ns *corev1.Namespace,
-	conf *SatelliteConfig,
-	name string) error {
-
+func NewCloudflared(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Namespace, name string, args *CloudflaredArgs) error {
 	appLabels := pulumi.StringMap{
 		"app": pulumi.String(name),
 	}
 
-	_, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-deployment", name), &appsv1.DeploymentArgs{
+	image := pulumi.StringPtr("cloudflare/cloudflared:latest")
+	if args.Image != nil {
+		image = pulumi.Sprintf("%v", args.Image).Ptr()
+	}
+
+	deployment, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-deployment", name), &appsv1.DeploymentArgs{
 		Metadata: &metav1.ObjectMetaArgs{
 			Namespace: ns.Metadata.Name(),
 		},
@@ -45,19 +45,24 @@ func NewSatellites(ctx *pulumi.Context,
 					Containers: corev1.ContainerArray{
 						corev1.ContainerArgs{
 							Name:  pulumi.String(name),
-							Image: pulumi.String("ghcr.io/scott-the-programmer/satellite.api/satellite-api:latest"),
+							Image: image,
+							Args: pulumi.StringArray{
+								pulumi.String("tunnel"),
+								pulumi.String("run"),
+								pulumi.String("--token"),
+								pulumi.Sprintf("%s.%s", args.Subdomain, "murray.kiwi"), // Replace murray.kiwi with your domain
+							},
 							Env: corev1.EnvVarArray{
 								corev1.EnvVarArgs{
-									Name:  pulumi.String("N2YO_KEY"),
-									Value: conf.N2YOKey,
-								},
-								corev1.EnvVarArgs{
-									Name:  pulumi.String("CURRENT_LATITUDE"),
-									Value: conf.Latitude,
-								},
-								corev1.EnvVarArgs{
-									Name:  pulumi.String("CURRENT_LONGITUDE"),
-									Value: conf.Longitude,
+									Name: pulumi.String("TUNNEL_TOKEN"),
+									ValueFrom: &corev1.EnvVarSourceArgs{
+										SecretKeyRef: &corev1.SecretKeySelectorArgs{
+											LocalObjectReference: &corev1.LocalObjectReferenceArgs{
+												Name: args.TunnelSecretName,
+											},
+											Key: args.TunnelSecretKey,
+										},
+									},
 								},
 							},
 						}},
@@ -82,28 +87,17 @@ func NewSatellites(ctx *pulumi.Context,
 			Type: pulumi.String("ClusterIP"),
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
-					Port:       pulumi.Int(80),
-					TargetPort: pulumi.Int(80),
+					Port:       pulumi.Int(8080), // Cloudflared listens on 8080 by default
+					TargetPort: pulumi.Int(8080),
 					Protocol:   pulumi.String("TCP"),
 				},
 			},
 			Selector: appLabels,
 		},
-	}, pulumi.Provider(provider))
+	}, pulumi.Provider(provider), pulumi.DependsOn([]pulumi.Resource{deployment}))
 	if err != nil {
 		return err
 	}
-
-	//Remove the ingress
-	// _, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
-	// 	&yaml.ConfigFileArgs{
-	// 		File: "apps/satellites.yaml",
-	// 	},
-	// 	pulumi.Provider(provider), pulumi.Parent(ns),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
