@@ -16,10 +16,23 @@ type SatelliteConfig struct {
 	Latitude  pulumi.StringOutput
 }
 
+type CloudflaredArgs struct {
+	TunnelSecretName pulumi.StringInput
+	TunnelSecretKey  pulumi.StringInput
+	Image            pulumi.StringPtrInput
+	Subdomain        pulumi.StringInput
+	Domain          pulumi.StringInput
+}
+
+type SatellitesArgs struct {
+	SatelliteConfig *SatelliteConfig
+	Cloudflared     *CloudflaredArgs
+}
+
 func NewSatellites(ctx *pulumi.Context,
 	provider *kubernetes.Provider,
 	ns *corev1.Namespace,
-	conf *SatelliteConfig,
+	args *SatellitesArgs,
 	name string) error {
 
 	appLabels := pulumi.StringMap{
@@ -48,15 +61,15 @@ func NewSatellites(ctx *pulumi.Context,
 							Env: corev1.EnvVarArray{
 								corev1.EnvVarArgs{
 									Name:  pulumi.String("N2YO_KEY"),
-									Value: conf.N2YOKey,
+									Value: args.SatelliteConfig.N2YOKey,
 								},
 								corev1.EnvVarArgs{
 									Name:  pulumi.String("CURRENT_LATITUDE"),
-									Value: conf.Latitude,
+									Value: args.SatelliteConfig.Latitude,
 								},
 								corev1.EnvVarArgs{
 									Name:  pulumi.String("CURRENT_LONGITUDE"),
-									Value: conf.Longitude,
+									Value: args.SatelliteConfig.Longitude,
 								},
 							},
 						}},
@@ -91,6 +104,91 @@ func NewSatellites(ctx *pulumi.Context,
 	}, pulumi.Provider(provider))
 	if err != nil {
 		return err
+	}
+
+	if args.Cloudflared != nil {
+		cfName := fmt.Sprintf("%s-cf", name)
+		image := pulumi.StringPtr("cloudflare/cloudflared:latest")
+		if args.Cloudflared.Image != nil {
+			image = pulumi.Sprintf("%v", args.Cloudflared.Image).ToStringPtrOutput()
+		}
+
+		cfDeployment, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-cf-deployment", name), &appsv1.DeploymentArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Namespace: ns.Metadata.Name(),
+			},
+			Spec: appsv1.DeploymentSpecArgs{
+				Selector: &metav1.LabelSelectorArgs{
+					MatchLabels: pulumi.StringMap{
+						"app": pulumi.String(cfName),
+					},
+				},
+				Replicas: pulumi.Int(1),
+				Template: &corev1.PodTemplateSpecArgs{
+					Metadata: &metav1.ObjectMetaArgs{
+						Labels: pulumi.StringMap{
+							"app":     pulumi.String(cfName),
+							"service": pulumi.String(cfName),
+						},
+						Namespace: ns.Metadata.Name(),
+					},
+					Spec: &corev1.PodSpecArgs{
+						Containers: corev1.ContainerArray{
+							corev1.ContainerArgs{
+								Name:  pulumi.String(cfName),
+								Image: image,
+								Args: pulumi.StringArray{
+									pulumi.String("tunnel"),
+									pulumi.String("run"),
+									pulumi.String("--token"),
+									pulumi.Sprintf("%s.%s", args.Cloudflared.Subdomain, args.Cloudflared.Domain),
+								},
+								Env: corev1.EnvVarArray{
+									corev1.EnvVarArgs{
+										Name: pulumi.String("TUNNEL_TOKEN"),
+										ValueFrom: &corev1.EnvVarSourceArgs{
+											SecretKeyRef: &corev1.SecretKeySelectorArgs{
+												Name: args.Cloudflared.TunnelSecretName,
+												Key:  args.Cloudflared.TunnelSecretKey,
+											},
+										},
+									},
+								},
+							}},
+					},
+				},
+			},
+		}, pulumi.Provider(provider))
+		if err != nil {
+			return err
+		}
+
+		_, err = corev1.NewService(ctx, fmt.Sprintf("%s-cf-svc", name), &corev1.ServiceArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Name:      pulumi.String(cfName),
+				Namespace: ns.Metadata.Name(),
+				Labels: pulumi.StringMap{
+					"app":     pulumi.String(cfName),
+					"service": pulumi.String(cfName),
+				},
+			},
+			Spec: &corev1.ServiceSpecArgs{
+				Type: pulumi.String("ClusterIP"),
+				Ports: &corev1.ServicePortArray{
+					&corev1.ServicePortArgs{
+						Port:       pulumi.Int(8080), // Cloudflared listens on 8080 by default
+						TargetPort: pulumi.Int(8080),
+						Protocol:   pulumi.String("TCP"),
+					},
+				},
+				Selector: pulumi.StringMap{
+					"app": pulumi.String(cfName),
+				},
+			},
+		}, pulumi.Provider(provider), pulumi.DependsOn([]pulumi.Resource{cfDeployment}))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
