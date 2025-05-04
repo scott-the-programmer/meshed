@@ -25,7 +25,7 @@ func NewCloudflared(ctx *pulumi.Context, provider *kubernetes.Provider, ns *core
 
 	image := pulumi.StringPtr("cloudflare/cloudflared:latest")
 	if args.Image != nil {
-		image = pulumi.Sprintf("%v", args.Image).Ptr()
+		image = pulumi.Sprintf("%v", args.Image).ToStringPtrOutput()
 	}
 
 	deployment, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-deployment", name), &appsv1.DeploymentArgs{
@@ -58,9 +58,7 @@ func NewCloudflared(ctx *pulumi.Context, provider *kubernetes.Provider, ns *core
 									Name: pulumi.String("TUNNEL_TOKEN"),
 									ValueFrom: &corev1.EnvVarSourceArgs{
 										SecretKeyRef: &corev1.SecretKeySelectorArgs{
-											LocalObjectReference: &corev1.LocalObjectReferenceArgs{
-												Name: args.TunnelSecretName,
-											},
+											Name: args.TunnelSecretName,
 											Key: args.TunnelSecretKey,
 										},
 									},
