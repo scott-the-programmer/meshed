@@ -20,3 +20,9 @@ func NewKubernetesProvider(ctx *pulumi.Context, kc pulumi.StringOutput) (*kubern
 	p, err := kubernetes.NewProvider(ctx, "internal_provider", &kubernetes.ProviderArgs{Kubeconfig: decoded})
 	return p, err
 }
+
+// NewLocalKubernetesProvider returns a kubernetes provider using the local kubeconfig
+func NewLocalKubernetesProvider(ctx *pulumi.Context) (*kubernetes.Provider, error) {
+	p, err := kubernetes.NewProvider(ctx, "internal_provider", &kubernetes.ProviderArgs{})
+	return p, err
+}

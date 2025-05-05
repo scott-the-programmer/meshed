@@ -7,7 +7,6 @@ import (
 	appsv1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/apps/v1"
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
-	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/yaml"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -68,16 +67,5 @@ func NewTermNz(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Na
 	if err != nil {
 		return err
 	}
-
-	_, err = yaml.NewConfigFile(ctx, fmt.Sprintf("%s-deployment", name),
-		&yaml.ConfigFileArgs{
-			File: fmt.Sprintf("apps/%s.yaml", name),
-		},
-		pulumi.Provider(provider), pulumi.Parent(ns),
-	)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

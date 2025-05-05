@@ -10,14 +10,6 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type CloudflaredArgs struct {
-	TunnelSecretName pulumi.StringInput
-	TunnelSecretKey  pulumi.StringInput
-	Image            pulumi.StringPtrInput
-	Subdomain        pulumi.StringInput
-	Domain          pulumi.StringInput
-}
-
 type BlogArgs struct {
 	Cloudflared *CloudflaredArgs
 }
@@ -88,6 +80,33 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 			image = pulumi.Sprintf("%v", args.Cloudflared.Image).ToStringPtrOutput()
 		}
 
+		// Create ConfigMap for cloudflared configuration
+		cfConfigMap, err := corev1.NewConfigMap(ctx, fmt.Sprintf("%s-cf-config", name), &corev1.ConfigMapArgs{
+			Metadata: &metav1.ObjectMetaArgs{
+				Name:      pulumi.String(fmt.Sprintf("%s-cf-config", name)),
+				Namespace: ns.Metadata.Name(),
+			},
+			Data: pulumi.StringMap{
+				"config.yaml": pulumi.Sprintf(`
+tunnel: %s
+credentials-file: /etc/cloudflared/creds/creds.json
+metrics: 0.0.0.0:2000
+no-autoupdate: true
+loglevel: debug
+originRequest:
+  connectTimeout: 30s
+  noTLSVerify: true
+ingress:
+- hostname: %s
+  service: http://blog:80
+- service: http_status:404
+`, args.Cloudflared.TunnelName, fmt.Sprintf("%s.%s", args.Cloudflared.Subdomain, args.Cloudflared.Domain)),
+			},
+		}, pulumi.Provider(provider))
+		if err != nil {
+			return err
+		}
+
 		cfDeployment, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-cf-deployment", name), &appsv1.DeploymentArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Namespace: ns.Metadata.Name(),
@@ -114,22 +133,46 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 								Image: image,
 								Args: pulumi.StringArray{
 									pulumi.String("tunnel"),
+									pulumi.String("--config"),
+									pulumi.String("/etc/cloudflared/config/config.yaml"),
 									pulumi.String("run"),
-									pulumi.String("--token"),
-									pulumi.Sprintf("%s.%s", args.Cloudflared.Subdomain, args.Cloudflared.Domain),
 								},
-								Env: corev1.EnvVarArray{
-									corev1.EnvVarArgs{
-										Name: pulumi.String("TUNNEL_TOKEN"),
-										ValueFrom: &corev1.EnvVarSourceArgs{
-											SecretKeyRef: &corev1.SecretKeySelectorArgs{
-												Name: args.Cloudflared.TunnelSecretName,
-												Key:  args.Cloudflared.TunnelSecretKey,
-											},
-										},
+								VolumeMounts: corev1.VolumeMountArray{
+									&corev1.VolumeMountArgs{
+										Name:      pulumi.String("config"),
+										MountPath: pulumi.String("/etc/cloudflared/config"),
+										ReadOnly:  pulumi.Bool(true),
+									},
+									&corev1.VolumeMountArgs{
+										Name:      pulumi.String("creds"),
+										MountPath: pulumi.String("/etc/cloudflared/creds"),
+										ReadOnly:  pulumi.Bool(true),
 									},
 								},
+								LivenessProbe: &corev1.ProbeArgs{
+									HttpGet: &corev1.HTTPGetActionArgs{
+										Path: pulumi.String("/ready"),
+										Port: pulumi.Int(2000),
+									},
+									InitialDelaySeconds: pulumi.Int(10),
+									PeriodSeconds:       pulumi.Int(10),
+									FailureThreshold:    pulumi.Int(1),
+								},
 							}},
+						Volumes: &corev1.VolumeArray{
+							&corev1.VolumeArgs{
+								Name: pulumi.String("config"),
+								ConfigMap: &corev1.ConfigMapVolumeSourceArgs{
+									Name: cfConfigMap.Metadata.Name(),
+								},
+							},
+							&corev1.VolumeArgs{
+								Name: pulumi.String("creds"),
+								Secret: &corev1.SecretVolumeSourceArgs{
+									SecretName: pulumi.String("smkiwi-cloudflared-file"),
+								},
+							},
+						},
 					},
 				},
 			},
@@ -151,7 +194,7 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 				Type: pulumi.String("ClusterIP"),
 				Ports: &corev1.ServicePortArray{
 					&corev1.ServicePortArgs{
-						Port:       pulumi.Int(8080), // Cloudflared listens on 8080 by default
+						Port:       pulumi.Int(8080),
 						TargetPort: pulumi.Int(8080),
 						Protocol:   pulumi.String("TCP"),
 					},

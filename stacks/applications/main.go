@@ -24,13 +24,7 @@ func main() {
 			Latitude:  latitude,
 		}
 
-		clusterStack, err := pulumi.NewStackReference(ctx, "scott-the-programmer/meshed/cluster", nil)
-		if err != nil {
-			return err
-		}
-		kubeConf := clusterStack.GetStringOutput(pulumi.String("kubeconfig"))
-
-		provider, err := kubernetes.NewKubernetesProvider(ctx, kubeConf)
+		provider, err := kubernetes.NewLocalKubernetesProvider(ctx)
 		if err != nil {
 			return err
 		}
@@ -46,24 +40,33 @@ func main() {
 		}
 
 		// Create Cloudflared deployment
-		cloudflaredArgs := &apps.CloudflaredArgs{
-			TunnelSecretName: pulumi.String("smkiwi-cloudflared-token"), // Replace with your secret name
-			TunnelSecretKey:  pulumi.String("token"),            // Replace with your secret key
-			Subdomain:        pulumi.String("api"),              // Replace with your desired subdomain
+		cloudflaredBlogArgs := &apps.CloudflaredArgs{
+			TunnelName:       pulumi.String("blog-tunnel"),
+			Subdomain:        pulumi.String("scott"),
 			Domain:           pulumi.String("murray.kiwi"),
 		}
 
-		err = apps.NewCloudflared(ctx, provider, appNS, "cloudflared", cloudflaredArgs)
+		cloudflaredSatelliteArgs := &apps.CloudflaredArgs{
+			TunnelName:       pulumi.String("blog-api-tunnel"),
+			Subdomain:        pulumi.String("api"),
+			Domain:           pulumi.String("murray.kiwi"),
+		}
+
+		blogArgs := &apps.BlogArgs{
+			Cloudflared: cloudflaredBlogArgs,
+		}
+
+		err = apps.NewBlog(ctx, provider, appNS, "blog", blogArgs)
 		if err != nil {
 			return err
 		}
 
-		err = apps.NewBlog(ctx, provider, appNS, "blog")
-		if err != nil {
-			return err
+		satellitesArgs := &apps.SatellitesArgs{
+			SatelliteConfig: satelliteConfig,
+			Cloudflared:     cloudflaredSatelliteArgs,
 		}
 
-		err = apps.NewSatellites(ctx, provider, appNS, satelliteConfig, "satellite-api")
+		err = apps.NewSatellites(ctx, provider, appNS, satellitesArgs, "satellite-api")
 		if err != nil {
 			return err
 		}
