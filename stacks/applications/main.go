@@ -52,6 +52,11 @@ func main() {
 			Domain:           pulumi.String("murray.kiwi"),
 		}
 
+		cloudflaredTermNzArgs := &apps.CloudflaredArgs{
+			TunnelName:       pulumi.String("term-nz-tunnel"),
+			Domain:           pulumi.String("term.nz"),
+		}
+
 		blogArgs := &apps.BlogArgs{
 			Cloudflared: cloudflaredBlogArgs,
 		}
@@ -71,7 +76,11 @@ func main() {
 			return err
 		}
 
-		err = apps.NewTermNz(ctx, provider, appNS, "term-nz")
+		termNzArgs := &apps.TermNzArgs{
+			Cloudflared: cloudflaredTermNzArgs,
+		}
+
+		err = apps.NewTermNz(ctx, provider, appNS, "term-nz", termNzArgs)
 		if err != nil {
 			return err
 		}
