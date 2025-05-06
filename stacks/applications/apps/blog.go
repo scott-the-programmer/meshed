@@ -58,11 +58,11 @@ func NewBlog(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Name
 			},
 		},
 		Spec: &corev1.ServiceSpecArgs{
-			Type: pulumi.String("ClusterIP"), // Change to ClusterIP
+			Type: pulumi.String("ClusterIP"),
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
-					Port:       pulumi.Int(80),       // Change to port 80
-					TargetPort: pulumi.Int(9080), //Original Target Port
+					Port:       pulumi.Int(80),
+					TargetPort: pulumi.Int(80),
 					Protocol:   pulumi.String("TCP"),
 				},
 			},
@@ -98,7 +98,7 @@ originRequest:
   noTLSVerify: true
 ingress:
 - hostname: %s
-  service: http://blog:80
+  service: http://blog:9080
 - service: http_status:404
 `, args.Cloudflared.TunnelName, fmt.Sprintf("%s.%s", args.Cloudflared.Subdomain, args.Cloudflared.Domain)),
 			},
