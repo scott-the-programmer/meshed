@@ -98,7 +98,7 @@ originRequest:
   noTLSVerify: true
 ingress:
 - hostname: %s
-  service: http://blog:9080
+  service: http://blog:80
 - service: http_status:404
 `, args.Cloudflared.TunnelName, fmt.Sprintf("%s.%s", args.Cloudflared.Subdomain, args.Cloudflared.Domain)),
 			},
