@@ -22,6 +22,11 @@ func NewTermNz(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.Na
 	_, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-deployment", name), &appsv1.DeploymentArgs{
 		Metadata: &metav1.ObjectMetaArgs{
 			Namespace: ns.Metadata.Name(),
+			Annotations: pulumi.StringMap{
+				"keel.sh/policy":       pulumi.String("all"),
+				"keel.sh/trigger":      pulumi.String("poll"),
+				"keel.sh/pollSchedule": pulumi.String("@every 1m"),
+			},
 		},
 		Spec: appsv1.DeploymentSpecArgs{
 			Selector: &metav1.LabelSelectorArgs{
@@ -109,6 +114,11 @@ ingress:
 		cfDeployment, err := appsv1.NewDeployment(ctx, fmt.Sprintf("%s-cf-deployment", name), &appsv1.DeploymentArgs{
 			Metadata: &metav1.ObjectMetaArgs{
 				Namespace: ns.Metadata.Name(),
+				Annotations: pulumi.StringMap{
+					"keel.sh/policy":       pulumi.String("all"),
+					"keel.sh/trigger":      pulumi.String("poll"),
+					"keel.sh/pollSchedule": pulumi.String("@every 1m"),
+				},
 			},
 			Spec: appsv1.DeploymentSpecArgs{
 				Selector: &metav1.LabelSelectorArgs{
