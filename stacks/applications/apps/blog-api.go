@@ -43,7 +43,7 @@ func NewBlogApi(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.N
 					Containers: corev1.ContainerArray{
 						corev1.ContainerArgs{
 							Name:  pulumi.String(name),
-							Image: pulumi.String("ghcr.io/scott-the-programmer/blog-api/blog-api:latest"),
+							Image: pulumi.String("ghcr.io/scott-the-programmer/blog-api:latest"),
 							Ports: corev1.ContainerPortArray{
 								&corev1.ContainerPortArgs{
 									ContainerPort: pulumi.Int(8080),
