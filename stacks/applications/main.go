@@ -46,6 +46,12 @@ func main() {
 			Domain:           pulumi.String("murray.kiwi"),
 		}
 
+		cloudflaredBlogApiArgs := &apps.CloudflaredArgs{
+			TunnelName:       pulumi.String("posts-api-tunnel"),
+			Subdomain:        pulumi.String("blog-api"),
+			Domain:           pulumi.String("murray.kiwi"),
+		}
+
 		cloudflaredSatelliteArgs := &apps.CloudflaredArgs{
 			TunnelName:       pulumi.String("blog-api-tunnel"),
 			Subdomain:        pulumi.String("api"),
@@ -62,6 +68,15 @@ func main() {
 		}
 
 		err = apps.NewBlog(ctx, provider, appNS, "blog", blogArgs)
+		if err != nil {
+			return err
+		}
+
+		blogApiArgs := &apps.BlogApiArgs{
+			Cloudflared: cloudflaredBlogApiArgs,
+		}
+
+		err = apps.NewBlogApi(ctx, provider, appNS, "blog-api", blogApiArgs)
 		if err != nil {
 			return err
 		}
