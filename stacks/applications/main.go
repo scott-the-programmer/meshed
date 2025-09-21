@@ -41,26 +41,36 @@ func main() {
 
 		// Create Cloudflared deployment
 		cloudflaredBlogArgs := &apps.CloudflaredArgs{
-			TunnelName:       pulumi.String("blog-tunnel"),
-			Subdomain:        pulumi.String("scott"),
-			Domain:           pulumi.String("murray.kiwi"),
+			TunnelName: pulumi.String("blog-tunnel"),
+			Subdomain:  pulumi.String("scott"),
+			Domain:     pulumi.String("murray.kiwi"),
 		}
 
 		cloudflaredBlogApiArgs := &apps.CloudflaredArgs{
-			TunnelName:       pulumi.String("posts-api-tunnel"),
-			Subdomain:        pulumi.String("blog-api"),
-			Domain:           pulumi.String("murray.kiwi"),
+			TunnelName: pulumi.String("posts-api-tunnel"),
+			Subdomain:  pulumi.String("blog-api"),
+			Domain:     pulumi.String("murray.kiwi"),
 		}
 
 		cloudflaredSatelliteArgs := &apps.CloudflaredArgs{
-			TunnelName:       pulumi.String("blog-api-tunnel"),
-			Subdomain:        pulumi.String("api"),
-			Domain:           pulumi.String("murray.kiwi"),
+			TunnelName: pulumi.String("blog-api-tunnel"),
+			Subdomain:  pulumi.String("api"),
+			Domain:     pulumi.String("murray.kiwi"),
 		}
 
 		cloudflaredTermNzArgs := &apps.CloudflaredArgs{
-			TunnelName:       pulumi.String("term-nz-tunnel"),
-			Domain:           pulumi.String("term.nz"),
+			TunnelName: pulumi.String("term-nz-tunnel"),
+			Domain:     pulumi.String("term.nz"),
+		}
+
+		cloudflaredAzSqlRetentionArgs := &apps.CloudflaredArgs{
+			TunnelName: pulumi.String("azsqlretention-tunnel"),
+			Domain:     pulumi.String("azsqlretention.term.nz"),
+		}
+
+		cloudflaredAzSqlApiRetentionArgs := &apps.CloudflaredArgs{
+			TunnelName: pulumi.String("azsqlretention-api-tunnel"),
+			Domain:     pulumi.String("azsqlretention-api.term.nz"),
 		}
 
 		blogArgs := &apps.BlogArgs{
@@ -96,6 +106,24 @@ func main() {
 		}
 
 		err = apps.NewTermNz(ctx, provider, appNS, "term-nz", termNzArgs)
+		if err != nil {
+			return err
+		}
+
+		azSqlRetentionArgs := &apps.AzSqlRetentionArgs{
+			Cloudflared: cloudflaredAzSqlRetentionArgs,
+		}
+
+		azSqlApiRetentionArgs := &apps.AzSqlRetentionArgs{
+			Cloudflared: cloudflaredAzSqlApiRetentionArgs,
+		}
+
+		err = apps.NewAzSqlRetentionFrontend(ctx, provider, appNS, "azsql-ret-frontend", azSqlRetentionArgs)
+		if err != nil {
+			return err
+		}
+
+		err = apps.NewAzSqlRetentionApi(ctx, provider, appNS, "azsql-ret-api", azSqlApiRetentionArgs)
 		if err != nil {
 			return err
 		}
