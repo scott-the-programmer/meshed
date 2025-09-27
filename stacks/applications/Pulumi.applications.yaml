@@ -1,7 +1,0 @@
-config:
-  satellite:CURRENT_LATITUDE:
-    secure: AAABABDbbfDfrWiDEQrKTjMWeGkb+EN2s8ExhWzBS1f4QWfybNg=
-  satellite:CURRENT_LONGITUDE:
-    secure: AAABAK2/rj26UkhJ3et9f5H28qs2RvpDTojM1ieyOZt9NAa0bUk=
-  satellite:N2YO_KEY:
-    secure: AAABAD8dU8xcC6R29rlHlThOT5Mqkh4qvibHf9zaZ3vOcvNZ47MsB0PE7qI1OBl2jKz9rvNCtHQX

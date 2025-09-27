@@ -7,22 +7,21 @@ import (
 	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		conf := config.New(ctx, "satellite")
+		// conf := config.New(ctx, "satellite")
 
-		n2yoKey := conf.RequireSecret("N2YO_KEY")
-		longitude := conf.RequireSecret("CURRENT_LONGITUDE")
-		latitude := conf.RequireSecret("CURRENT_LATITUDE")
+		// n2yoKey := conf.RequireSecret("N2YO_KEY")
+		// longitude := conf.RequireSecret("CURRENT_LONGITUDE")
+		// latitude := conf.RequireSecret("CURRENT_LATITUDE")
 
-		satelliteConfig := &apps.SatelliteConfig{
-			N2YOKey:   n2yoKey,
-			Longitude: longitude,
-			Latitude:  latitude,
-		}
+		// satelliteConfig := &apps.SatelliteConfig{
+		// 	N2YOKey:   n2yoKey,
+		// 	Longitude: longitude,
+		// 	Latitude:  latitude,
+		// }
 
 		provider, err := kubernetes.NewLocalKubernetesProvider(ctx)
 		if err != nil {
@@ -52,11 +51,11 @@ func main() {
 			Domain:     pulumi.String("murray.kiwi"),
 		}
 
-		cloudflaredSatelliteArgs := &apps.CloudflaredArgs{
-			TunnelName: pulumi.String("blog-api-tunnel"),
-			Subdomain:  pulumi.String("api"),
-			Domain:     pulumi.String("murray.kiwi"),
-		}
+		// cloudflaredSatelliteArgs := &apps.CloudflaredArgs{
+		// 	TunnelName: pulumi.String("blog-api-tunnel"),
+		// 	Subdomain:  pulumi.String("api"),
+		// 	Domain:     pulumi.String("murray.kiwi"),
+		// }
 
 		cloudflaredTermNzArgs := &apps.CloudflaredArgs{
 			TunnelName: pulumi.String("term-nz-tunnel"),
@@ -91,15 +90,15 @@ func main() {
 			return err
 		}
 
-		satellitesArgs := &apps.SatellitesArgs{
-			SatelliteConfig: satelliteConfig,
-			Cloudflared:     cloudflaredSatelliteArgs,
-		}
+		// satellitesArgs := &apps.SatellitesArgs{
+		// 	SatelliteConfig: satelliteConfig,
+		// 	Cloudflared:     cloudflaredSatelliteArgs,
+		// }
 
-		err = apps.NewSatellites(ctx, provider, appNS, satellitesArgs, "satellite-api")
-		if err != nil {
-			return err
-		}
+		// err = apps.NewSatellites(ctx, provider, appNS, satellitesArgs, "satellite-api")
+		// if err != nil {
+		// 	return err
+		// }
 
 		termNzArgs := &apps.TermNzArgs{
 			Cloudflared: cloudflaredTermNzArgs,
