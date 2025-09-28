@@ -30,11 +30,11 @@ Once that's all ready, you can use the various commands I've written into the Ma
 - `make apps-down` - Takes the apps offline.
 - `make load-config` - Loads the kubeconfig from the cluster stack.
 
-## Configuration 
+## Configuration
 
 The project is configured via Pulumi settings. Set these using the `pulumi config set` command:
 
-- `meshed:CLOUDFLARE_BLOG_ZONE_ID`: Zone ID for the blog on Cloudflare. 
+- `meshed:CLOUDFLARE_BLOG_ZONE_ID`: Zone ID for the blog on Cloudflare.
 - `meshed:CLOUDFLARE_TERM_NZ_ZONE_ID`: Zone ID for the term NZ on Cloudflare.
 - `meshed:CLOUDFLARE_LEGACY_ZONE_ID`: Zone ID for the legacy domain on Cloudflare.
 - `meshed:CLOUDFLARE_EMAIL`: Your Cloudflare email.
@@ -49,6 +49,41 @@ The project is configured via Pulumi settings. Set these using the `pulumi confi
 Remember to replace `<value>` with the actual values when setting the configuration.
 
 ---
+
 Depending on what MESHED_CLOUD is set to, you will need to configure the [linode](https://www.pulumi.com/registry/packages/linode/installation-configuration/) or [scaleway variables](https://www.pulumi.com/registry/packages/scaleway/installation-configuration/)
 
-Feel free to give it a whirl, and see what you can learn from it! And, of course, if you have any suggestions or improvements, I'd love to hear them.
+## Cloudflared Tunnel Helper
+
+The script `create-cloudflared-tunnel.sh` can create a tunnel for either a subdomain or the root (apex) domain.
+
+Examples:
+
+```
+# Subdomain
+./create-cloudflared-tunnel.sh blog example.com  # creates blog.example.com
+
+# Root / apex (any of these forms):
+./create-cloudflared-tunnel.sh example.com       # creates example.com
+./create-cloudflared-tunnel.sh @ example.com     # creates example.com
+./create-cloudflared-tunnel.sh root example.com  # creates example.com
+./create-cloudflared-tunnel.sh apex example.com  # creates example.com
+```
+
+It will:
+
+- Create (or reuse) a Cloudflare tunnel named after the subdomain or the sanitized domain for root.
+- Create/update a Kubernetes secret `<name>-cloudflared-file` in the `personal` namespace containing the tunnel credentials.
+- Add a DNS route for the hostname if it does not already exist.
+- Generate a config file at `~/.cloudflared/config-<id>.yml`.
+
+You can then run the tunnel locally:
+
+```
+cloudflared tunnel --config ~/.cloudflared/config-blog.yml run
+```
+
+Or for the root domain:
+
+```
+cloudflared tunnel --config ~/.cloudflared/config-root.yml run
+```
