@@ -73,7 +73,7 @@ func NewBlogApi(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.N
 			Type: pulumi.String("ClusterIP"),
 			Ports: &corev1.ServicePortArray{
 				&corev1.ServicePortArgs{
-					Port:       pulumi.Int(80),
+					Port:       pulumi.Int(8080),
 					TargetPort: pulumi.Int(8080),
 					Protocol:   pulumi.String("TCP"),
 				},
@@ -94,7 +94,7 @@ func NewBlogApi(ctx *pulumi.Context, provider *kubernetes.Provider, ns *corev1.N
 			Name:        name,
 			Args:        args.Cloudflared,
 			ServiceName: name,
-			ServicePort: 80,
+			ServicePort: 8080,
 			SecretName:  "blog-api-cloudflared-file",
 			Hostname:    hostname,
 		})
